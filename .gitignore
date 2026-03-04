@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+lib/
+plugin/build/
+*.tsbuildinfo
+
+# Nitrogen generated code (regenerated on build)
+nitrogen/generated/
+
+# C++ build artifacts
+*.o
+*.a
+*.so
+
+# iOS
+ios/Pods/
+ios/build/
+*.xcworkspace
+*.xcuserdata
+
+# Android
+android/.gradle/
+android/build/
+android/local.properties
+
+# Expo
+.expo/
+web-build/
+
+# React Native bundles
+*.hbc
+*.bundle
+*.jsbundle
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment & secrets
+.env
+.env.*
+*.jks
+*.p8
+*.p12
+*.key
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+
+# Bun
+bun.lock

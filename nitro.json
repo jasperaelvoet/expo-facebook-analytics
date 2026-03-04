@@ -1,0 +1,19 @@
+{
+  "$schema": "https://nitro.margelo.com/nitro.schema.json",
+  "cxxNamespace": ["fbanalytics"],
+  "ios": {
+    "iosModuleName": "NitroFBAnalytics"
+  },
+  "android": {
+    "androidNamespace": ["com", "nitrofbanalytics"],
+    "androidCxxLibName": "NitroFBAnalytics"
+  },
+  "autolinking": {
+    "FacebookAnalytics": {
+      "swift": "HybridFacebookAnalytics",
+      "kotlin": "HybridFacebookAnalytics"
+    }
+  },
+  "ignorePaths": ["node_modules", "lib", "plugin"],
+  "gitAttributesGeneratedFlag": true
+}

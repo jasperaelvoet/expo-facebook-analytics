@@ -1,0 +1,51 @@
+{
+  "name": "react-native-nitro-fbanalytics",
+  "version": "1.0.0",
+  "description": "High-performance Facebook Analytics for React Native using Nitro Modules",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "source": "src/index.ts",
+  "files": [
+    "src",
+    "lib",
+    "nitrogen/generated",
+    "ios",
+    "android",
+    "plugin/build",
+    "app.plugin.js",
+    "react-native-nitro-fbanalytics.podspec"
+  ],
+  "scripts": {
+    "build": "bun tsc",
+    "build:plugin": "bun tsc --project plugin/tsconfig.json",
+    "nitrogen": "nitro-codegen",
+    "prepare": "bun run build && bun run build:plugin",
+    "clean": "rm -rf lib plugin/build"
+  },
+  "keywords": [
+    "react-native",
+    "expo",
+    "facebook",
+    "analytics",
+    "app-events",
+    "nitro-modules"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "*",
+    "react-native": "*",
+    "react-native-nitro-modules": ">=0.20.0",
+    "expo": ">=49.0.0"
+  },
+  "peerDependenciesMeta": {
+    "expo": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@expo/config-plugins": "^8.0.0",
+    "nitro-codegen": "^0.20.0",
+    "react-native-nitro-modules": "^0.20.0",
+    "typescript": "^5.3.0"
+  }
+}

@@ -1,0 +1,60 @@
+buildscript {
+    ext.safeExtGet = {prop, fallback ->
+        rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.2.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+def nitrogenAutolinking = file("nitrogen/generated/android/NitroFBAnalytics-autolinking.gradle")
+if (nitrogenAutolinking.exists()) {
+    apply from: nitrogenAutolinking
+}
+
+android {
+    namespace 'com.nitrofbanalytics'
+    compileSdkVersion safeExtGet('compileSdkVersion', 34)
+
+    defaultConfig {
+        minSdkVersion safeExtGet('minSdkVersion', 21)
+        targetSdkVersion safeExtGet('targetSdkVersion', 34)
+    }
+
+    sourceSets {
+        main {
+            java.srcDirs += [
+                'src/main/java',
+                'nitrogen/generated/android/kotlin'
+            ]
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+repositories {
+    google()
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.facebook.react:react-native:+'
+    implementation 'com.margelo.nitro:nitro-modules:+'
+    implementation 'com.facebook.android:facebook-android-sdk:17.+'
+}

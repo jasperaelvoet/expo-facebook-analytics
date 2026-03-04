@@ -1,0 +1,2 @@
+# Mark nitrogen-generated files as generated (excluded from GitHub stats/diffs)
+nitrogen/generated/** linguist-generated=true
