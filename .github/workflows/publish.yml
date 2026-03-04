@@ -13,6 +13,8 @@ jobs:
       pull-requests: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -47,24 +49,25 @@ jobs:
         id: version
         run: echo "version=v$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
+      - name: Create and push tag
+        run: |
+          git tag "${{ steps.version.outputs.version }}"
+          git push origin "${{ steps.version.outputs.version }}"
+
       - name: Build Changelog
         id: changelog
         uses: mikepenz/release-changelog-builder-action@v6
         with:
-          mode: "HYBRID"
+          mode: "COMMIT"
           toTag: ${{ steps.version.outputs.version }}
           configurationJson: |
             {
               "categories": [
-                { "title": "## 🚀 Features", "labels": ["feature", "enhancement"] },
-                { "title": "## 🐛 Bug Fixes", "labels": ["bug", "fix"] },
-                { "title": "## 🧹 Maintenance", "labels": ["chore", "maintenance", "dependencies"] },
-                { "title": "## 📖 Documentation", "labels": ["documentation", "docs"] }
+                { "title": "## 🚀 Features", "labels": [] },
+                { "title": "## 🐛 Bug Fixes", "labels": [] }
               ],
-              "template": "#{{CHANGELOG}}\n\n## 🔄 Other Changes\n\n#{{UNCATEGORIZED}}",
-              "pr_template": "- #{{TITLE}} (#{{NUMBER}}) @#{{AUTHOR}}",
-              "ignore_labels": ["skip-changelog"],
-              "sort": { "order": "ASC", "on_property": "mergedAt" }
+              "template": "#{{UNCATEGORIZED}}",
+              "commit_template": "- #{{TITLE}} (#{{SHORT_SHA}})"
             }
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -72,4 +75,4 @@ jobs:
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${{ steps.version.outputs.version }}" --notes "${{ steps.changelog.outputs.changelog }}"
+        run: gh release create "${{ steps.version.outputs.version }}" --title "${{ steps.version.outputs.version }}" --notes "${{ steps.changelog.outputs.changelog }}"
