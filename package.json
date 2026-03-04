@@ -1,6 +1,6 @@
 {
   "name": "expo-facebook-analytics",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "High-performance Facebook Analytics for React Native using Nitro Modules",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -23,7 +23,8 @@
     "plugin/build",
     "app.plugin.js",
     "expo-facebook-analytics.podspec",
-    "nitro.json"
+    "nitro.json",
+    "react-native.config.js"
   ],
   "scripts": {
     "build": "bun tsc",
