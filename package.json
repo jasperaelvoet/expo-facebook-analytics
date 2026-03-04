@@ -1,6 +1,6 @@
 {
   "name": "expo-facebook-analytics",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "High-performance Facebook Analytics for React Native using Nitro Modules",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -47,8 +47,8 @@
   "peerDependencies": {
     "react": "*",
     "react-native": "*",
-    "react-native-nitro-modules": ">=0.33.2",
-    "expo": ">=55.0.4"
+    "react-native-nitro-modules": ">=0.33.0",
+    "expo": ">=55.0.0"
   },
   "peerDependenciesMeta": {
     "expo": {
