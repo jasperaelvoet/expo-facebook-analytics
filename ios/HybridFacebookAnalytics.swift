@@ -1,6 +1,7 @@
 import Foundation
 import NitroModules
 import FBSDKCoreKit
+import AdSupport
 
 class HybridFacebookAnalytics: HybridFacebookAnalyticsSpec {
 
@@ -85,11 +86,15 @@ class HybridFacebookAnalytics: HybridFacebookAnalyticsSpec {
     // MARK: - Device Identifiers
 
     func getAnonymousID() throws -> Promise<String?> {
-        return Promise.resolved(withValue: AppEvents.shared.anonymousID)
+        return Promise.resolved(withResult: AppEvents.shared.anonymousID)
     }
 
     func getAdvertiserID() throws -> Promise<String?> {
-        return Promise.resolved(withValue: nil)
+        let idfa = ASIdentifierManager.shared().advertisingIdentifier.uuidString
+        if idfa == "00000000-0000-0000-0000-000000000000" {
+            return Promise.resolved(withResult: nil)
+        }
+        return Promise.resolved(withResult: idfa)
     }
 
     // MARK: - Configuration
@@ -110,9 +115,18 @@ class HybridFacebookAnalytics: HybridFacebookAnalyticsSpec {
     // MARK: - Push Notifications
 
     func setPushNotificationsDeviceToken(token: String) throws {
-        if let data = token.data(using: .utf8) {
-            AppEvents.shared.setPushNotificationsDeviceToken(data)
+        // Token comes as a hex string — convert back to raw Data
+        let hex = token.replacingOccurrences(of: " ", with: "")
+        var data = Data()
+        var index = hex.startIndex
+        while index < hex.endIndex {
+            let nextIndex = hex.index(index, offsetBy: 2)
+            if let byte = UInt8(hex[index..<nextIndex], radix: 16) {
+                data.append(byte)
+            }
+            index = nextIndex
         }
+        AppEvents.shared.setPushNotificationsDeviceToken(data)
     }
 
     func setPushNotificationsRegistrationId(registrationId: String) throws {

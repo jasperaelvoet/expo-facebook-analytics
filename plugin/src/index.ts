@@ -1,38 +1,36 @@
+import { type ConfigPlugin, createRunOncePlugin } from "@expo/config-plugins";
 import {
-  type ConfigPlugin,
-  createRunOncePlugin,
-} from '@expo/config-plugins';
-import {
+  withAndroidPermissions,
   withFacebookAppIdString,
   withFacebookManifest,
-  withAndroidPermissions,
-} from './withFacebookAnalyticsAndroid';
+} from "./withFacebookAnalyticsAndroid";
 import {
+  withFacebookAppDelegate,
   withFacebookIOS,
-  withUserTrackingPermission,
   withSKAdNetworkIdentifiers,
-} from './withFacebookAnalyticsIOS';
+  withUserTrackingPermission,
+} from "./withFacebookAnalyticsIOS";
 
-const pkg = require('../../package.json');
+const pkg = require("../../package.json");
 
 export type ConfigProps = {
   appID: string;
   clientToken: string;
   displayName?: string;
   scheme?: string;
-  autoInitEnabled?: boolean;
+  isAutoInitEnabled?: boolean;
   autoLogAppEventsEnabled?: boolean;
   advertiserIDCollectionEnabled?: boolean;
   iosUserTrackingPermission?: string | false;
 };
 
-const withFacebookAnalytics: ConfigPlugin<ConfigProps | void> = (
+const withFacebookAnalytics: ConfigPlugin<ConfigProps | undefined> = (
   config,
-  props
+  props,
 ) => {
   if (!props) {
     throw new Error(
-      'react-native-nitro-fbanalytics plugin requires props: { appID, clientToken }'
+      "expo-facebook-analytics plugin requires props: { appID, clientToken }",
     );
   }
 
@@ -41,7 +39,7 @@ const withFacebookAnalytics: ConfigPlugin<ConfigProps | void> = (
     clientToken,
     displayName,
     scheme = `fb${props.appID}`,
-    autoInitEnabled = true,
+    isAutoInitEnabled = true,
     autoLogAppEventsEnabled = true,
     advertiserIDCollectionEnabled = true,
     iosUserTrackingPermission,
@@ -57,9 +55,9 @@ const withFacebookAnalytics: ConfigPlugin<ConfigProps | void> = (
   const resolvedProps = {
     appID,
     clientToken,
-    displayName: displayName || config.name || '',
+    displayName: displayName || config.name || "",
     scheme,
-    autoInitEnabled,
+    isAutoInitEnabled,
     autoLogAppEventsEnabled,
     advertiserIDCollectionEnabled,
     iosUserTrackingPermission,
@@ -72,10 +70,11 @@ const withFacebookAnalytics: ConfigPlugin<ConfigProps | void> = (
 
   // iOS
   config = withFacebookIOS(config, resolvedProps);
+  config = withFacebookAppDelegate(config, resolvedProps);
   config = withUserTrackingPermission(config, resolvedProps);
   config = withSKAdNetworkIdentifiers(config, [
-    'v9wttpbfk9.skadnetwork',
-    'n38lu8286q.skadnetwork',
+    "v9wttpbfk9.skadnetwork",
+    "n38lu8286q.skadnetwork",
   ]);
 
   return config;
@@ -84,5 +83,5 @@ const withFacebookAnalytics: ConfigPlugin<ConfigProps | void> = (
 export default createRunOncePlugin(
   withFacebookAnalytics,
   pkg.name,
-  pkg.version
+  pkg.version,
 );

@@ -1,0 +1,15 @@
+# Source & config
+.github/
+.vscode/
+.git/
+plugin/src/
+tests/
+biome.json
+tsconfig.json
+bun.lock
+
+# Build artifacts
+node_modules/
+# OS files
+.DS_Store
+*.log

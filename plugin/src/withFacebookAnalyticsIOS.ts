@@ -1,28 +1,26 @@
 import {
   type ConfigPlugin,
+  withAppDelegate,
   withInfoPlist,
-} from '@expo/config-plugins';
+} from "@expo/config-plugins";
 
 type ResolvedProps = {
   appID: string;
   clientToken: string;
   displayName: string;
   scheme: string;
-  autoInitEnabled: boolean;
+  isAutoInitEnabled: boolean;
   autoLogAppEventsEnabled: boolean;
   advertiserIDCollectionEnabled: boolean;
   iosUserTrackingPermission?: string | false;
 };
 
-export const withFacebookIOS: ConfigPlugin<ResolvedProps> = (
-  config,
-  props
-) => {
+export const withFacebookIOS: ConfigPlugin<ResolvedProps> = (config, props) => {
   return withInfoPlist(config, (mod) => {
     mod.modResults.FacebookAppID = props.appID;
     mod.modResults.FacebookClientToken = props.clientToken;
     mod.modResults.FacebookDisplayName = props.displayName;
-    mod.modResults.FacebookAutoInitEnabled = props.autoInitEnabled;
+    mod.modResults.FacebookAutoInitEnabled = props.isAutoInitEnabled;
     mod.modResults.FacebookAutoLogAppEventsEnabled =
       props.autoLogAppEventsEnabled;
     mod.modResults.FacebookAdvertiserIDCollectionEnabled =
@@ -34,9 +32,8 @@ export const withFacebookIOS: ConfigPlugin<ResolvedProps> = (
     }
 
     const fbSchemeEntry = mod.modResults.CFBundleURLTypes.find(
-      (entry: any) =>
-        entry.CFBundleURLSchemes &&
-        entry.CFBundleURLSchemes.includes(props.scheme)
+      (entry: { CFBundleURLSchemes?: string[] }) =>
+        entry.CFBundleURLSchemes?.includes(props.scheme),
     );
 
     if (!fbSchemeEntry) {
@@ -47,10 +44,10 @@ export const withFacebookIOS: ConfigPlugin<ResolvedProps> = (
 
     // LSApplicationQueriesSchemes
     const queriesSchemes = [
-      'fbapi',
-      'fb-messenger-api',
-      'fbauth2',
-      'fbshareextension',
+      "fbapi",
+      "fb-messenger-api",
+      "fbauth2",
+      "fbshareextension",
     ];
 
     if (!mod.modResults.LSApplicationQueriesSchemes) {
@@ -69,7 +66,7 @@ export const withFacebookIOS: ConfigPlugin<ResolvedProps> = (
 
 export const withUserTrackingPermission: ConfigPlugin<ResolvedProps> = (
   config,
-  props
+  props,
 ) => {
   if (props.iosUserTrackingPermission === false) {
     return config;
@@ -78,14 +75,54 @@ export const withUserTrackingPermission: ConfigPlugin<ResolvedProps> = (
   return withInfoPlist(config, (mod) => {
     mod.modResults.NSUserTrackingUsageDescription =
       props.iosUserTrackingPermission ||
-      'This identifier will be used to deliver personalized ads to you.';
+      "This identifier will be used to deliver personalized ads to you.";
+    return mod;
+  });
+};
+
+export const withFacebookAppDelegate: ConfigPlugin<ResolvedProps> = (
+  config,
+  _props,
+) => {
+  return withAppDelegate(config, (mod) => {
+    const contents = mod.modResults.contents;
+
+    // Add import
+    if (!contents.includes("#import <FBSDKCoreKit/FBSDKCoreKit.h>")) {
+      mod.modResults.contents = mod.modResults.contents.replace(
+        '#import "AppDelegate.h"',
+        '#import "AppDelegate.h"\n#import <FBSDKCoreKit/FBSDKCoreKit.h>',
+      );
+    }
+
+    // Add didFinishLaunchingWithOptions hook
+    if (!contents.includes("FBSDKApplicationDelegate")) {
+      mod.modResults.contents = mod.modResults.contents.replace(
+        "self.initialProps = @{};",
+        "self.initialProps = @{};\n  [[FBSDKApplicationDelegate sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];",
+      );
+    }
+
+    // Add openURL handler
+    if (!contents.includes("openURL:url options:options")) {
+      const openURLMethod = `
+
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
+  return [[FBSDKApplicationDelegate sharedInstance] application:application openURL:url options:options];
+}`;
+      mod.modResults.contents = mod.modResults.contents.replace(
+        /@end\s*$/,
+        `${openURLMethod}\n\n@end\n`,
+      );
+    }
+
     return mod;
   });
 };
 
 export const withSKAdNetworkIdentifiers: ConfigPlugin<string[]> = (
   config,
-  identifiers
+  identifiers,
 ) => {
   return withInfoPlist(config, (mod) => {
     if (!mod.modResults.SKAdNetworkItems) {
@@ -94,8 +131,8 @@ export const withSKAdNetworkIdentifiers: ConfigPlugin<string[]> = (
 
     const existing = new Set(
       mod.modResults.SKAdNetworkItems.map(
-        (item: any) => item.SKAdNetworkIdentifier
-      )
+        (item: { SKAdNetworkIdentifier: string }) => item.SKAdNetworkIdentifier,
+      ),
     );
 
     for (const id of identifiers) {

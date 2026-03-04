@@ -1,1 +1,1 @@
-module.exports = require('./plugin/build/withFacebookAnalytics');
+module.exports = require("./plugin/build").default;

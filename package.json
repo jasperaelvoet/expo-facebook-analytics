@@ -1,10 +1,19 @@
 {
-  "name": "react-native-nitro-fbanalytics",
+  "name": "expo-facebook-analytics",
   "version": "1.0.0",
   "description": "High-performance Facebook Analytics for React Native using Nitro Modules",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "source": "src/index.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jasperaelvoet/expo-facebook-analytics.git"
+  },
+  "author": "Jasper Aelvoet",
+  "bugs": {
+    "url": "https://github.com/jasperaelvoet/expo-facebook-analytics/issues"
+  },
+  "homepage": "https://github.com/jasperaelvoet/expo-facebook-analytics#readme",
   "files": [
     "src",
     "lib",
@@ -13,14 +22,18 @@
     "android",
     "plugin/build",
     "app.plugin.js",
-    "react-native-nitro-fbanalytics.podspec"
+    "expo-facebook-analytics.podspec",
+    "nitro.json"
   ],
   "scripts": {
     "build": "bun tsc",
     "build:plugin": "bun tsc --project plugin/tsconfig.json",
-    "nitrogen": "nitro-codegen",
+    "nitrogen": "nitrogen",
     "prepare": "bun run build && bun run build:plugin",
-    "clean": "rm -rf lib plugin/build"
+    "clean": "rm -rf lib plugin/build",
+    "test": "bun test",
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
   },
   "keywords": [
     "react-native",
@@ -34,8 +47,8 @@
   "peerDependencies": {
     "react": "*",
     "react-native": "*",
-    "react-native-nitro-modules": ">=0.20.0",
-    "expo": ">=49.0.0"
+    "react-native-nitro-modules": ">=0.33.2",
+    "expo": ">=55.0.4"
   },
   "peerDependenciesMeta": {
     "expo": {
@@ -43,9 +56,11 @@
     }
   },
   "devDependencies": {
-    "@expo/config-plugins": "^8.0.0",
-    "nitro-codegen": "^0.20.0",
-    "react-native-nitro-modules": "^0.20.0",
-    "typescript": "^5.3.0"
+    "@biomejs/biome": "2.4.5",
+    "@expo/config-plugins": "^55.0.6",
+    "@types/bun": "^1.3.10",
+    "nitrogen": "0.33.2",
+    "react-native-nitro-modules": "0.33.2",
+    "typescript": "^5.9.3"
   }
 }
