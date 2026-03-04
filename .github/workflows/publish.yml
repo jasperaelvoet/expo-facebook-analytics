@@ -39,6 +39,9 @@ jobs:
       - name: Test
         run: bun test
 
+      - name: Generate Nitrogen bindings
+        run: bun run nitrogen
+
       - name: Build
         run: bun run prepare
 
