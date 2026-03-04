@@ -70,7 +70,7 @@ jobs:
                 { "title": "## 🐛 Bug Fixes", "labels": [] }
               ],
               "template": "#{{UNCATEGORIZED}}",
-              "commit_template": "- #{{TITLE}} (#{{SHORT_SHA}})"
+              "commit_template": "- #{{TITLE}}"
             }
         env:
           GITHUB_TOKEN: ${{ github.token }}
