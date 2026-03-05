@@ -1,0 +1,32 @@
+version: 2
+updates:
+  - package-ecosystem: "bun"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "gradle"
+    directory: "/android"
+    schedule:
+      interval: "weekly"
+    registries:
+      - maven-google
+      - maven-central
+
+  - package-ecosystem: "swift"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+registries:
+  maven-google:
+    type: "maven-repository"
+    url: "https://maven.google.com"
+  maven-central:
+    type: "maven-repository"
+    url: "https://repo.maven.apache.org/maven2"

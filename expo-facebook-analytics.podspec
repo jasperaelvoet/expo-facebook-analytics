@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
   ]
 
   s.dependency 'React-Core'
-  s.dependency 'FBSDKCoreKit', '~> 17.0'
+  s.dependency 'FBSDKCoreKit', '18.0.3'
 
   s.frameworks = ['AdSupport']
 

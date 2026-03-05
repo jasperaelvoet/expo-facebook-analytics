@@ -56,5 +56,5 @@ repositories {
 dependencies {
     implementation 'com.facebook.react:react-native:+'
     implementation 'com.margelo.nitro:nitro-modules:+'
-    implementation 'com.facebook.android:facebook-android-sdk:17.+'
+    implementation 'com.facebook.android:facebook-android-sdk:18.0.3'
 }
