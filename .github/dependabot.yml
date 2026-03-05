@@ -13,11 +13,6 @@ updates:
       - maven-google
       - maven-central
 
-  - package-ecosystem: "swift"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
