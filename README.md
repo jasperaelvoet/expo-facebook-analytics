@@ -25,7 +25,7 @@ npm install expo-facebook-analytics react-native-nitro-modules
 ### Peer Dependencies
 
 - `react-native` >= 0.71
-- `react-native-nitro-modules` >= 0.33.0
+- `react-native-nitro-modules` >= 0.35.0
 - `expo` >= 55.0.0 _(optional, for config plugin)_
 
 ### iOS
