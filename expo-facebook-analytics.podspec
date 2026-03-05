@@ -20,14 +20,9 @@ Pod::Spec.new do |s|
   ]
 
   s.dependency 'React-Core'
+  s.dependency 'FBSDKCoreKit', '18.0.3'
 
   s.frameworks = ['AdSupport']
-
-  spm_dependency(s,
-    url: 'https://github.com/facebook/facebook-ios-sdk.git',
-    requirement: { kind: 'upToNextMajorVersion', minimumVersion: '18.0.3' },
-    products: ['FacebookCore']
-  )
 
   if File.exist?(nitrogen_autolinking)
     load nitrogen_autolinking
