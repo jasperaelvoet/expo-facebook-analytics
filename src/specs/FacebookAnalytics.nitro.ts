@@ -2,6 +2,18 @@ import type { HybridObject } from "react-native-nitro-modules";
 
 export interface FacebookAnalytics
   extends HybridObject<{ ios: "swift"; android: "kotlin" }> {
+  // SDK initialization & runtime configuration
+  initialize(): void;
+  setAutoLogAppEventsEnabled(enabled: boolean): void;
+  setAdvertiserIDCollectionEnabled(enabled: boolean): void;
+  setAppID(appID: string): void;
+  setClientToken(clientToken: string): void;
+  /**
+   * Enable verbose Facebook SDK logging (app events, network requests,
+   * developer errors). Logs are printed to the native console.
+   */
+  setLoggingEnabled(enabled: boolean): void;
+
   // Event logging
   logEvent(
     eventName: string,

@@ -10,8 +10,14 @@
   },
   "autolinking": {
     "FacebookAnalytics": {
-      "swift": "HybridFacebookAnalytics",
-      "kotlin": "HybridFacebookAnalytics"
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "HybridFacebookAnalytics"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "HybridFacebookAnalytics"
+      }
     }
   },
   "ignorePaths": ["node_modules", "lib", "plugin"],

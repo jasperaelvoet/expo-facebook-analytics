@@ -2,10 +2,13 @@ package com.nitrofbanalytics
 
 import android.os.Bundle
 import com.facebook.FacebookSdk
+import com.facebook.LoggingBehavior
 import com.facebook.appevents.AppEventsConstants
 import com.facebook.appevents.AppEventsLogger
 import com.facebook.internal.AttributionIdentifiers
 import com.margelo.nitro.core.Promise
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import java.math.BigDecimal
 import java.util.Currency
 
@@ -14,6 +17,52 @@ class HybridFacebookAnalytics : HybridFacebookAnalyticsSpec() {
     private val logger: AppEventsLogger by lazy {
         AppEventsLogger.newLogger(FacebookSdk.getApplicationContext())
     }
+
+    // Background scope for blocking SDK calls (Play Services I/O) so they never
+    // run on the JS thread.
+    private val ioScope = CoroutineScope(Dispatchers.IO)
+
+    // region Initialization & Runtime Configuration
+
+    override fun initialize() {
+        FacebookSdk.setAutoInitEnabled(true)
+        FacebookSdk.fullyInitialize()
+    }
+
+    override fun setAutoLogAppEventsEnabled(enabled: Boolean) {
+        FacebookSdk.setAutoLogAppEventsEnabled(enabled)
+    }
+
+    override fun setAdvertiserIDCollectionEnabled(enabled: Boolean) {
+        FacebookSdk.setAdvertiserIDCollectionEnabled(enabled)
+    }
+
+    override fun setAppID(appID: String) {
+        FacebookSdk.setApplicationId(appID)
+    }
+
+    override fun setClientToken(clientToken: String) {
+        FacebookSdk.setClientToken(clientToken)
+    }
+
+    override fun setLoggingEnabled(enabled: Boolean) {
+        val behaviors = listOf(
+            LoggingBehavior.APP_EVENTS,
+            LoggingBehavior.NETWORK_REQUESTS,
+            LoggingBehavior.DEVELOPER_ERRORS,
+            LoggingBehavior.INCLUDE_ACCESS_TOKENS
+        )
+        FacebookSdk.setIsDebugEnabled(enabled)
+        for (behavior in behaviors) {
+            if (enabled) {
+                FacebookSdk.addLoggingBehavior(behavior)
+            } else {
+                FacebookSdk.removeLoggingBehavior(behavior)
+            }
+        }
+    }
+
+    // endregion
 
     // region Event Logging
 
@@ -87,12 +136,16 @@ class HybridFacebookAnalytics : HybridFacebookAnalyticsSpec() {
     }
 
     override fun getAdvertiserID(): Promise<String?> {
-        return try {
-            val context = FacebookSdk.getApplicationContext()
-            val identifiers = AttributionIdentifiers.getAttributionIdentifiers(context)
-            Promise.resolved(identifiers?.androidAdvertiserId)
-        } catch (e: Exception) {
-            Promise.resolved(null)
+        // AttributionIdentifiers performs blocking Play Services I/O, so run it
+        // off the JS thread on the IO dispatcher.
+        return Promise.async(ioScope) {
+            try {
+                val context = FacebookSdk.getApplicationContext()
+                val identifiers = AttributionIdentifiers.getAttributionIdentifiers(context)
+                identifiers?.androidAdvertiserId
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 

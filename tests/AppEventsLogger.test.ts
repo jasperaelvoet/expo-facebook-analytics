@@ -2,6 +2,12 @@ import { beforeEach, describe, expect, mock, test } from "bun:test";
 
 // Mock the native module before importing
 const mockNative = {
+  initialize: mock(() => {}),
+  setAutoLogAppEventsEnabled: mock(() => {}),
+  setAdvertiserIDCollectionEnabled: mock(() => {}),
+  setAppID: mock(() => {}),
+  setClientToken: mock(() => {}),
+  setLoggingEnabled: mock(() => {}),
   logEvent: mock(() => {}),
   logEventWithoutParams: mock(() => {}),
   logPurchase: mock(() => {}),
@@ -25,6 +31,12 @@ mock.module("react-native-nitro-modules", () => ({
 }));
 
 const {
+  initialize,
+  setAutoLogAppEventsEnabled,
+  setAdvertiserIDCollectionEnabled,
+  setAppID,
+  setClientToken,
+  setLoggingEnabled,
   logEvent,
   logPurchase,
   logPushNotificationOpen,
@@ -326,5 +338,47 @@ describe("setPushNotificationsRegistrationId", () => {
     expect(mockNative.setPushNotificationsRegistrationId).toHaveBeenCalledWith(
       "reg-xyz",
     );
+  });
+});
+
+describe("initialize & runtime configuration", () => {
+  beforeEach(() => resetMocks());
+
+  test("initialize calls the native initializer", () => {
+    initialize();
+
+    expect(mockNative.initialize).toHaveBeenCalledTimes(1);
+  });
+
+  test("setAutoLogAppEventsEnabled forwards the flag", () => {
+    setAutoLogAppEventsEnabled(false);
+
+    expect(mockNative.setAutoLogAppEventsEnabled).toHaveBeenCalledWith(false);
+  });
+
+  test("setAdvertiserIDCollectionEnabled forwards the flag", () => {
+    setAdvertiserIDCollectionEnabled(true);
+
+    expect(mockNative.setAdvertiserIDCollectionEnabled).toHaveBeenCalledWith(
+      true,
+    );
+  });
+
+  test("setAppID forwards the app ID", () => {
+    setAppID("123456789");
+
+    expect(mockNative.setAppID).toHaveBeenCalledWith("123456789");
+  });
+
+  test("setClientToken forwards the client token", () => {
+    setClientToken("client-token-abc");
+
+    expect(mockNative.setClientToken).toHaveBeenCalledWith("client-token-abc");
+  });
+
+  test("setLoggingEnabled forwards the flag", () => {
+    setLoggingEnabled(true);
+
+    expect(mockNative.setLoggingEnabled).toHaveBeenCalledWith(true);
   });
 });

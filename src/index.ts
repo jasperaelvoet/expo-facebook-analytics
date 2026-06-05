@@ -8,6 +8,82 @@ export { AppEventParams, AppEvents } from "./types";
 const NativeFBAnalytics =
   NitroModules.createHybridObject<FacebookAnalyticsSpec>("FacebookAnalytics");
 
+const EMPTY_PARAMS: Record<string, string> = {};
+
+/**
+ * Coerce a params object to the `Record<string, string>` shape the native
+ * layer expects. Returns a shared empty object when there is nothing to convert
+ * so the common no-params path allocates nothing.
+ */
+function toStringParams(
+  params: Record<string, string | number> | undefined,
+): Record<string, string> {
+  if (!params) {
+    return EMPTY_PARAMS;
+  }
+  const keys = Object.keys(params);
+  if (keys.length === 0) {
+    return EMPTY_PARAMS;
+  }
+  const stringParams: Record<string, string> = {};
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    stringParams[key] = String(params[key]);
+  }
+  return stringParams;
+}
+
+/**
+ * Manually initialize the Facebook SDK.
+ *
+ * Only required when `isAutoInitEnabled` is set to `false` in the config plugin.
+ * Call this once, early in your app's lifecycle (e.g. in your root layout),
+ * after optionally configuring the app ID / client token at runtime.
+ */
+export function initialize(): void {
+  NativeFBAnalytics.initialize();
+}
+
+/**
+ * Enable or disable automatic logging of app events at runtime.
+ */
+export function setAutoLogAppEventsEnabled(enabled: boolean): void {
+  NativeFBAnalytics.setAutoLogAppEventsEnabled(enabled);
+}
+
+/**
+ * Enable or disable advertiser ID (IDFA / AAID) collection at runtime.
+ */
+export function setAdvertiserIDCollectionEnabled(enabled: boolean): void {
+  NativeFBAnalytics.setAdvertiserIDCollectionEnabled(enabled);
+}
+
+/**
+ * Set the Facebook App ID at runtime (alternative to the config plugin).
+ * Call before {@link initialize} when configuring the SDK manually.
+ */
+export function setAppID(appID: string): void {
+  NativeFBAnalytics.setAppID(appID);
+}
+
+/**
+ * Set the Facebook Client Token at runtime (alternative to the config plugin).
+ * Call before {@link initialize} when configuring the SDK manually.
+ */
+export function setClientToken(clientToken: string): void {
+  NativeFBAnalytics.setClientToken(clientToken);
+}
+
+/**
+ * Enable verbose Facebook SDK logging (app events, network requests, developer
+ * errors). Output is printed to the native console — view it via the Xcode
+ * console / `xcrun simctl spawn booted log stream` (iOS) or `adb logcat` (Android).
+ * Intended for development only.
+ */
+export function setLoggingEnabled(enabled: boolean): void {
+  NativeFBAnalytics.setLoggingEnabled(enabled);
+}
+
 /**
  * Log a custom or predefined app event.
  * @param eventName - Event name (use AppEvents constants for predefined events)
@@ -18,7 +94,7 @@ export function logEvent(
   ...args: Array<number | Params>
 ): void {
   let valueToSum = 0;
-  let params: Params = {};
+  let params: Params | undefined;
 
   for (const arg of args) {
     if (typeof arg === "number") {
@@ -28,10 +104,7 @@ export function logEvent(
     }
   }
 
-  const stringParams: Record<string, string> = {};
-  for (const [key, value] of Object.entries(params)) {
-    stringParams[key] = String(value);
-  }
+  const stringParams = toStringParams(params);
 
   if (Object.keys(stringParams).length > 0) {
     NativeFBAnalytics.logEvent(eventName, valueToSum, stringParams);
@@ -48,13 +121,11 @@ export function logPurchase(
   currencyCode: string,
   parameters?: Params,
 ): void {
-  const stringParams: Record<string, string> = {};
-  if (parameters) {
-    for (const [key, value] of Object.entries(parameters)) {
-      stringParams[key] = String(value);
-    }
-  }
-  NativeFBAnalytics.logPurchase(purchaseAmount, currencyCode, stringParams);
+  NativeFBAnalytics.logPurchase(
+    purchaseAmount,
+    currencyCode,
+    toStringParams(parameters),
+  );
 }
 
 /**
@@ -63,13 +134,7 @@ export function logPurchase(
 export function logPushNotificationOpen(
   payload?: Record<string, string | number>,
 ): void {
-  const stringPayload: Record<string, string> = {};
-  if (payload) {
-    for (const [key, value] of Object.entries(payload)) {
-      stringPayload[key] = String(value);
-    }
-  }
-  NativeFBAnalytics.logPushNotificationOpen(stringPayload);
+  NativeFBAnalytics.logPushNotificationOpen(toStringParams(payload));
 }
 
 /**

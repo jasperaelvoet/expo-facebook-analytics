@@ -1,0 +1,27 @@
+{
+  "name": "expo-facebook-analytics-example",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "prebuild": "expo prebuild --clean",
+    "doctor": "expo-doctor",
+    "logs:ios": "xcrun simctl spawn booted log stream --level debug --style compact --predicate 'senderImagePath CONTAINS \"FBSDK\" OR eventMessage CONTAINS[c] \"FBSDK\" OR eventMessage CONTAINS[c] \"AppEvents\"'",
+    "logs:android": "adb logcat -s FacebookSDK:V AppEvents:V FBSDK:V",
+    "postinstall": "node scripts/link-local-module.mjs"
+  },
+  "dependencies": {
+    "expo": "~56.0.0",
+    "expo-facebook-analytics": "file:..",
+    "react": "19.2.3",
+    "react-native": "0.85.3",
+    "react-native-nitro-modules": "0.35.9"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.0",
+    "typescript": "~5.9.3"
+  }
+}

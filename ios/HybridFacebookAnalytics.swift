@@ -5,6 +5,43 @@ import AdSupport
 
 class HybridFacebookAnalytics: HybridFacebookAnalyticsSpec {
 
+    // MARK: - Initialization & Runtime Configuration
+
+    func initialize() throws {
+        // On iOS, auto-init is controlled by Info.plist (FacebookAutoInitEnabled).
+        // When disabled, this performs the deferred initialization.
+        ApplicationDelegate.shared.initializeSDK()
+    }
+
+    func setAutoLogAppEventsEnabled(enabled: Bool) throws {
+        Settings.shared.isAutoLogAppEventsEnabled = enabled
+    }
+
+    func setAdvertiserIDCollectionEnabled(enabled: Bool) throws {
+        Settings.shared.isAdvertiserIDCollectionEnabled = enabled
+    }
+
+    func setAppID(appID: String) throws {
+        Settings.shared.appID = appID
+    }
+
+    func setClientToken(clientToken: String) throws {
+        Settings.shared.clientToken = clientToken
+    }
+
+    func setLoggingEnabled(enabled: Bool) throws {
+        let behaviors: [LoggingBehavior] = [
+            .appEvents, .networkRequests, .developerErrors, .informational,
+        ]
+        for behavior in behaviors {
+            if enabled {
+                Settings.shared.enableLoggingBehavior(behavior)
+            } else {
+                Settings.shared.disableLoggingBehavior(behavior)
+            }
+        }
+    }
+
     // MARK: - Event Logging
 
     func logEvent(eventName: String, valueToSum: Double, params: [String: String]) throws {
@@ -115,16 +152,24 @@ class HybridFacebookAnalytics: HybridFacebookAnalyticsSpec {
     // MARK: - Push Notifications
 
     func setPushNotificationsDeviceToken(token: String) throws {
-        // Token comes as a hex string — convert back to raw Data
-        let hex = token.replacingOccurrences(of: " ", with: "")
-        var data = Data()
-        var index = hex.startIndex
-        while index < hex.endIndex {
-            let nextIndex = hex.index(index, offsetBy: 2)
-            if let byte = UInt8(hex[index..<nextIndex], radix: 16) {
-                data.append(byte)
+        // Token comes as a hex string — convert back to raw Data.
+        // Iterate over UTF-8 bytes and pack each pair of hex digits into one byte.
+        var data = Data(capacity: token.utf8.count / 2)
+        var highNibble: UInt8? = nil
+        for ascii in token.utf8 {
+            let nibble: UInt8
+            switch ascii {
+            case 0x30...0x39: nibble = ascii - 0x30        // '0'-'9'
+            case 0x41...0x46: nibble = ascii - 0x41 + 10   // 'A'-'F'
+            case 0x61...0x66: nibble = ascii - 0x61 + 10   // 'a'-'f'
+            default: continue                              // skip spaces / non-hex
             }
-            index = nextIndex
+            if let high = highNibble {
+                data.append((high << 4) | nibble)
+                highNibble = nil
+            } else {
+                highNibble = nibble
+            }
         }
         AppEvents.shared.setPushNotificationsDeviceToken(data)
     }

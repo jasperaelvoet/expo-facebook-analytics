@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.license      = package['license']
   s.author       = 'expo-facebook-analytics contributors'
   s.source       = { :git => '.', :tag => s.version.to_s }
-  s.platforms    = { :ios => '13.0' }
+  s.platforms    = { :ios => '16.4' }
   s.module_name  = 'NitroFBAnalytics'
 
   s.source_files = [

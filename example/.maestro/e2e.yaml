@@ -1,0 +1,15 @@
+# End-to-end test: launches the example app, runs every native module method
+# via the "Run all tests" button, and asserts the overall result banner reports
+# a full pass. Run locally with `maestro test .maestro/e2e.yaml`.
+appId: com.example.fbanalytics
+---
+- launchApp:
+    clearState: true
+# The app auto-runs initialize() + logging on mount; give it a moment.
+- assertVisible: "Facebook Analytics"
+- tapOn:
+    id: "run-all"
+# runAll() calls every method; the banner shows "E2E PASSED n/n" on success.
+- assertVisible:
+    id: "e2e-result"
+- assertVisible: "E2E PASSED.*"
