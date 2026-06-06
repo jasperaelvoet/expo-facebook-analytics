@@ -1,4 +1,4 @@
-package com.nitrofbanalytics
+package com.margelo.nitro.com.nitrofbanalytics
 
 import android.os.Bundle
 import com.facebook.FacebookSdk
@@ -48,7 +48,7 @@ class HybridFacebookAnalytics : HybridFacebookAnalyticsSpec() {
     override fun setLoggingEnabled(enabled: Boolean) {
         val behaviors = listOf(
             LoggingBehavior.APP_EVENTS,
-            LoggingBehavior.NETWORK_REQUESTS,
+            LoggingBehavior.REQUESTS,
             LoggingBehavior.DEVELOPER_ERRORS,
             LoggingBehavior.INCLUDE_ACCESS_TOKENS
         )
@@ -132,7 +132,9 @@ class HybridFacebookAnalytics : HybridFacebookAnalyticsSpec() {
     // region Device Identifiers
 
     override fun getAnonymousID(): Promise<String?> {
-        return Promise.resolved(logger.anonymousAppDeviceGUID)
+        return Promise.resolved(
+            AppEventsLogger.getAnonymousAppDeviceGUID(FacebookSdk.getApplicationContext())
+        )
     }
 
     override fun getAdvertiserID(): Promise<String?> {

@@ -23,6 +23,7 @@ ios/build/
 # Android
 android/.gradle/
 android/build/
+android/.cxx/
 android/local.properties
 
 # Expo

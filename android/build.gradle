@@ -15,7 +15,7 @@ buildscript {
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
-def nitrogenAutolinking = file("nitrogen/generated/android/NitroFBAnalytics-autolinking.gradle")
+def nitrogenAutolinking = file("../nitrogen/generated/android/NitroFBAnalytics+autolinking.gradle")
 if (nitrogenAutolinking.exists()) {
     apply from: nitrogenAutolinking
 }
@@ -27,13 +27,30 @@ android {
     defaultConfig {
         minSdkVersion safeExtGet('minSdkVersion', 24)
         targetSdkVersion safeExtGet('targetSdkVersion', 36)
+
+        externalNativeBuild {
+            cmake {
+                cppFlags "-O2", "-frtti", "-fexceptions", "-Wall", "-std=c++20"
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
+    }
+
+    buildFeatures {
+        prefab true
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
     }
 
     sourceSets {
         main {
             java.srcDirs += [
                 'src/main/java',
-                'nitrogen/generated/android/kotlin'
+                '../nitrogen/generated/android/kotlin'
             ]
         }
     }
@@ -55,6 +72,14 @@ repositories {
 
 dependencies {
     implementation 'com.facebook.react:react-native:+'
-    implementation 'com.margelo.nitro:nitro-modules:+'
+    // react-native-nitro-modules does not publish `com.margelo.nitro:nitro-modules`
+    // to a Maven repo and autolinking doesn't substitute it, so depend on the
+    // autolinked Gradle project directly. Fall back to the coordinate for
+    // standalone builds where the project isn't part of the Gradle build.
+    if (findProject(':react-native-nitro-modules') != null) {
+        implementation project(':react-native-nitro-modules')
+    } else {
+        implementation 'com.margelo.nitro:nitro-modules:+'
+    }
     implementation 'com.facebook.android:facebook-android-sdk:18.0.3'
 }
