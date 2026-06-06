@@ -9,10 +9,10 @@ import { lstatSync, mkdirSync, symlinkSync, unlinkSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const here = dirname(fileURLToPath(import.meta.url));
+const here = dirname(fileURLToPath(import.meta.url)); // example/scripts
 const nodeModules = resolve(here, "..", "node_modules");
 const link = resolve(nodeModules, "expo-facebook-analytics");
-const target = resolve(here, ".."); // repo root
+const target = resolve(here, "..", ".."); // repo root (example/scripts -> ..)
 
 mkdirSync(nodeModules, { recursive: true });
 
