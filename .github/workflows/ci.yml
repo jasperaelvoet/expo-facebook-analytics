@@ -129,7 +129,10 @@ jobs:
 
       - name: Build & install (Release embeds the JS bundle — no Metro needed)
         working-directory: example
-        run: bunx expo run:ios --configuration Release --device "iPhone 16"
+        # --no-bundler: don't start the Metro dev server (the Release build has
+        # the bundle embedded). Without it, `expo run:ios` hosts Metro and never
+        # returns, hanging the job.
+        run: bunx expo run:ios --configuration Release --device "iPhone 16" --no-bundler
 
       - name: Install Maestro
         run: |
@@ -204,13 +207,12 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           disable-animations: true
-          script: |
-            cd example
-            # --no-install: prebuild wants to realign expo/react/react-native
-            # versions and would prompt to reinstall (fails in CI). Gradle
-            # resolves from the existing node_modules, so skip the reinstall.
-            bunx expo run:android --variant release --no-bundler --no-install
-            maestro test .maestro/e2e.yaml
+          # The action runs each script line in its own shell, so `cd` must be
+          # chained — otherwise expo builds the default app from the repo root
+          # and Maestro looks for the flow in the wrong directory. --no-install
+          # skips prebuild's dependency-reinstall prompt (fails in CI; gradle
+          # resolves from the existing node_modules).
+          script: cd example && bunx expo run:android --variant release --no-bundler --no-install && maestro test .maestro/e2e.yaml
 
       - name: Upload Maestro artifacts on failure
         if: failure()
