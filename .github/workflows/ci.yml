@@ -206,7 +206,10 @@ jobs:
           disable-animations: true
           script: |
             cd example
-            bunx expo run:android --variant release --no-bundler
+            # --no-install: prebuild wants to realign expo/react/react-native
+            # versions and would prompt to reinstall (fails in CI). Gradle
+            # resolves from the existing node_modules, so skip the reinstall.
+            bunx expo run:android --variant release --no-bundler --no-install
             maestro test .maestro/e2e.yaml
 
       - name: Upload Maestro artifacts on failure
