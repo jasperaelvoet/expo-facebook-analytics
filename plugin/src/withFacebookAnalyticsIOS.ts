@@ -54,9 +54,13 @@ export const withFacebookIOS: ConfigPlugin<ResolvedProps> = (config, props) => {
       mod.modResults.LSApplicationQueriesSchemes = [];
     }
 
+    const existingQueries = new Set<string>(
+      mod.modResults.LSApplicationQueriesSchemes,
+    );
     for (const scheme of queriesSchemes) {
-      if (!mod.modResults.LSApplicationQueriesSchemes.includes(scheme)) {
+      if (!existingQueries.has(scheme)) {
         mod.modResults.LSApplicationQueriesSchemes.push(scheme);
+        existingQueries.add(scheme);
       }
     }
 

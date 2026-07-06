@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "FB Analytics Example",
+    "slug": "expo-facebook-analytics-example",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "fbanalyticsexample",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.example.fbanalytics",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.example.fbanalytics"
+    },
+    "plugins": [
+      [
+        "expo-facebook-analytics",
+        {
+          "appID": "000000000000000",
+          "clientToken": "00000000000000000000000000000000",
+          "displayName": "FB Analytics Example",
+          "isAutoInitEnabled": false,
+          "autoLogAppEventsEnabled": true,
+          "advertiserIDCollectionEnabled": true,
+          "iosUserTrackingPermission": "This identifier will be used to test analytics event delivery."
+        }
+      ]
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://www.react.doctor/schema/config.json",
+  "blocking": "warning",
+  "ignore": {
+    "files": [
+      "lib/**",
+      "nitrogen/**",
+      "plugin/build/**",
+      "example/**",
+      "docs/**"
+    ],
+    "rules": ["deslop/unused-file", "react-doctor/expo-no-redundant-dependency"]
+  }
+}

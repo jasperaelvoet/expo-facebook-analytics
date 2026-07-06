@@ -1,0 +1,25 @@
+# End-to-end test: launches the example app, runs every native module method
+# via the "Run all tests" button, and asserts the overall result banner reports
+# a full pass. Run locally with `maestro test .maestro/e2e.yaml`.
+appId: com.example.fbanalytics
+---
+- launchApp:
+    clearState: true
+# Android 15+ (API 35) emulators pop a "16 KB compatibility" system dialog over
+# the app for not-yet-aligned RN/third-party native libs. Dismiss it if it
+# appears (no-op on API 34 / iOS, where the dialog never shows).
+- tapOn:
+    text: "Don't Show Again"
+    optional: true
+# Wait for the app to be interactive. The Run all tests button has a testID, so
+# it's a reliable cross-platform signal that JS loaded and the module resolved.
+- extendedWaitUntil:
+    visible:
+      id: "run-all"
+    timeout: 90000
+- tapOn:
+    id: "run-all"
+# runAll() calls every native method; the banner shows "E2E PASSED n/n".
+- extendedWaitUntil:
+    visible: "E2E PASSED.*"
+    timeout: 90000
