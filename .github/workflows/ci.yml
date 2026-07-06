@@ -11,6 +11,11 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege default for every job. Jobs that need more (e.g. react-doctor
+# publishing PR comments and commit statuses) widen this in their own block.
+permissions:
+  contents: read
+
 jobs:
   # ── Fast feedback: typecheck, lint, unit tests, codegen, build ──
   quality:
@@ -55,6 +60,7 @@ jobs:
       contents: read
       pull-requests: write
       issues: write
+      statuses: write
     steps:
       - uses: actions/checkout@v6
         with:
@@ -137,10 +143,10 @@ jobs:
         # returns, hanging the job.
         run: bunx expo run:ios --configuration Release --device "iPhone 16" --no-bundler
 
-      - name: Install Maestro
-        run: |
-          curl -Ls "https://get.maestro.mobile.dev" | bash
-          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Set up Maestro
+        uses: remarkablemark/setup-maestro-cli@9266a700b5003d75cd73d7001e236a772fa0f86f # v1.0.17
+        with:
+          version: 2.6.1
 
       - name: Run E2E flow
         working-directory: example
@@ -196,10 +202,10 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Install Maestro
-        run: |
-          curl -Ls "https://get.maestro.mobile.dev" | bash
-          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+      - name: Set up Maestro
+        uses: remarkablemark/setup-maestro-cli@9266a700b5003d75cd73d7001e236a772fa0f86f # v1.0.17
+        with:
+          version: 2.6.1
 
       - name: Build, boot emulator & run E2E
         uses: reactivecircus/android-emulator-runner@v2
