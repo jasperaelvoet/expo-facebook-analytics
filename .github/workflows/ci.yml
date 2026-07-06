@@ -107,13 +107,16 @@ jobs:
 
       - name: Build the local module
         run: |
-          bun install
+          # Retry once with a clean cache: npm/DefinitelyTyped occasionally
+          # serves a @types/react tarball whose bytes don't match the stored
+          # integrity hash, and this job has no bun cache to fall back on.
+          bun install || (bun pm cache rm && bun install)
           bun run nitrogen
           bun run prepare
 
       - name: Install example dependencies
         working-directory: example
-        run: bun install
+        run: bun install || (bun pm cache rm && bun install)
 
       - name: Cache CocoaPods
         uses: actions/cache@v4
