@@ -12,8 +12,17 @@ All functions are named exports of `expo-facebook-analytics`.
 
 ### `initialize(): void`
 
-Manually initializes the Facebook SDK. Only required when `isAutoInitEnabled` is
-`false`. Call once, early, before logging events.
+Initializes the Facebook SDK from JavaScript. Required when `isAutoInitEnabled`
+is `false`: nothing else starts the SDK then. (On iOS there has been no
+auto-init since SDK 9, so the plugin's `AppDelegate` wiring is the only other
+path.) Safe to call once; call it before logging events.
+
+### `setAutoInitEnabled(enabled: boolean): void`
+
+Turns the native SDK's auto-init flag on or off at runtime. `initialize()`
+switches it on and Android persists it, so a consent-gated app should call
+`setAutoInitEnabled(false)` when consent is withdrawn — otherwise the next
+launch initializes the SDK before JavaScript runs. No-op on iOS.
 
 ### `setAutoLogAppEventsEnabled(enabled: boolean): void`
 
@@ -40,6 +49,15 @@ example app exposes `bun run logs:ios` / `bun run logs:android` for this.
 Development only.
 
 ## Event logging
+
+### `activateApp(): void`
+
+Logs an app activation: publishes the install event (with the Google Play
+install referrer on Android) the first time it runs on a device, then the
+launch event. The SDK only does this on its own when automatic event logging is
+on, so call it once per launch after `initialize()` whenever
+`autoLogAppEventsEnabled` is `false` — without it Meta cannot attribute installs
+to your ads.
 
 ### `logEvent(eventName: string, ...args: Array<number | Params>): void`
 

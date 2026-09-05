@@ -4,6 +4,12 @@ export interface FacebookAnalytics
   extends HybridObject<{ ios: "swift"; android: "kotlin" }> {
   // SDK initialization & runtime configuration
   initialize(): void;
+  /**
+   * Turn the native SDK's auto-init flag on or off at runtime. Android
+   * persists it, so an app that gates the SDK behind consent should switch it
+   * off again when consent is withdrawn. No-op on iOS, which has no auto-init.
+   */
+  setAutoInitEnabled(enabled: boolean): void;
   setAutoLogAppEventsEnabled(enabled: boolean): void;
   setAdvertiserIDCollectionEnabled(enabled: boolean): void;
   setAppID(appID: string): void;
@@ -15,6 +21,12 @@ export interface FacebookAnalytics
   setLoggingEnabled(enabled: boolean): void;
 
   // Event logging
+  /**
+   * Log an app activation: publishes the install (with the Play install
+   * referrer on Android) once per device, then the launch event. The only path
+   * that does so when automatic event logging is off.
+   */
+  activateApp(): void;
   logEvent(
     eventName: string,
     valueToSum: number,

@@ -45,6 +45,18 @@ export function initialize(): void {
 }
 
 /**
+ * Turn the native SDK's auto-init flag on or off at runtime.
+ *
+ * `initialize()` switches it on, and Android persists the flag, so an app that
+ * gates the SDK behind consent should call `setAutoInitEnabled(false)` when
+ * consent is withdrawn — otherwise the next launch initializes the SDK before
+ * JavaScript runs. No-op on iOS, which has had no auto-init since SDK 9.
+ */
+export function setAutoInitEnabled(enabled: boolean): void {
+  NativeFBAnalytics.setAutoInitEnabled(enabled);
+}
+
+/**
  * Enable or disable automatic logging of app events at runtime.
  */
 export function setAutoLogAppEventsEnabled(enabled: boolean): void {
@@ -111,6 +123,19 @@ export function logEvent(
   } else {
     NativeFBAnalytics.logEventWithoutParams(eventName, valueToSum);
   }
+}
+
+/**
+ * Log an app activation.
+ *
+ * Publishes the install event (carrying the Google Play install referrer on
+ * Android) the first time it runs on a device, then the launch event. The
+ * Facebook SDK only does this by itself when automatic event logging is on, so
+ * call it once per launch after {@link initialize} whenever
+ * `autoLogAppEventsEnabled` is off — without it Meta cannot attribute installs.
+ */
+export function activateApp(): void {
+  NativeFBAnalytics.activateApp();
 }
 
 /**

@@ -47,8 +47,9 @@ logPurchase(29.99, 'USD');
 ```
 
 For deferred (consent-gated) initialization, set `isAutoInitEnabled: false` in the
-plugin and call `initialize()` yourself. Enable the Facebook SDK's native logging
-with `setLoggingEnabled(true)`. See the [documentation](https://jasperaelvoet.github.io/expo-facebook-analytics/) for the full API.
+plugin and call `initialize()` yourself; with `autoLogAppEventsEnabled: false`, also
+call `activateApp()` so Meta still receives the install event. Enable the Facebook
+SDK's native logging with `setLoggingEnabled(true)`. See the [documentation](https://jasperaelvoet.github.io/expo-facebook-analytics/) for the full API.
 
 See the **[documentation](https://jasperaelvoet.github.io/expo-facebook-analytics/)** for the full API,
 config-plugin options, manual initialization, and predefined constants.

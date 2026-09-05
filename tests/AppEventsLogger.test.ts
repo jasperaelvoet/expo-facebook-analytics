@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, mock, test } from "bun:test";
 // Mock the native module before importing
 const mockNative = {
   initialize: mock(() => {}),
+  setAutoInitEnabled: mock(() => {}),
+  activateApp: mock(() => {}),
   setAutoLogAppEventsEnabled: mock(() => {}),
   setAdvertiserIDCollectionEnabled: mock(() => {}),
   setAppID: mock(() => {}),
@@ -32,6 +34,8 @@ mock.module("react-native-nitro-modules", () => ({
 
 const {
   initialize,
+  setAutoInitEnabled,
+  activateApp,
   setAutoLogAppEventsEnabled,
   setAdvertiserIDCollectionEnabled,
   setAppID,
@@ -380,5 +384,25 @@ describe("initialize & runtime configuration", () => {
     setLoggingEnabled(true);
 
     expect(mockNative.setLoggingEnabled).toHaveBeenCalledWith(true);
+  });
+});
+
+describe("setAutoInitEnabled", () => {
+  beforeEach(() => resetMocks());
+
+  test("forwards the flag to the native SDK", () => {
+    setAutoInitEnabled(false);
+
+    expect(mockNative.setAutoInitEnabled).toHaveBeenCalledWith(false);
+  });
+});
+
+describe("activateApp", () => {
+  beforeEach(() => resetMocks());
+
+  test("activates the native SDK", () => {
+    activateApp();
+
+    expect(mockNative.activateApp).toHaveBeenCalledTimes(1);
   });
 });

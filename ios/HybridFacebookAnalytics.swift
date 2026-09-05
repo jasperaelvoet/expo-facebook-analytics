@@ -13,6 +13,11 @@ class HybridFacebookAnalytics: HybridFacebookAnalyticsSpec {
         ApplicationDelegate.shared.initializeSDK()
     }
 
+    func setAutoInitEnabled(enabled: Bool) throws {
+        // The iOS SDK dropped auto-initialization in v9; `initialize()` is the
+        // only way it starts, so there is nothing to persist or undo here.
+    }
+
     func setAutoLogAppEventsEnabled(enabled: Bool) throws {
         Settings.shared.isAutoLogAppEventsEnabled = enabled
     }
@@ -43,6 +48,14 @@ class HybridFacebookAnalytics: HybridFacebookAnalyticsSpec {
     }
 
     // MARK: - Event Logging
+
+    func activateApp() throws {
+        // Publishes the install and launch events. The SDK insists on the main
+        // thread for this call; Nitro calls arrive on the JS thread.
+        DispatchQueue.main.async {
+            AppEvents.shared.activateApp()
+        }
+    }
 
     func logEvent(eventName: String, valueToSum: Double, params: [String: String]) throws {
         let fbParams: [AppEvents.ParameterName: Any] = params.reduce(into: [:]) { result, pair in

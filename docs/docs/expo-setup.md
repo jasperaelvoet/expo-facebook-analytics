@@ -47,9 +47,14 @@ npx expo prebuild --clean
 | `iosUserTrackingPermission`     | `string` \| `false` | ATT prompt   | Custom ATT prompt text, or `false` to omit |
 
 :::info Disabling auto-init
-If you set `isAutoInitEnabled: false`, the SDK will **not** initialize on launch.
-You must call [`initialize()`](./manual-initialization.md) yourself before logging
-events. This is useful for consent-gated initialization (GDPR / ATT).
+With `isAutoInitEnabled: true` (the default) the plugin wires the SDK into your
+app delegate — `AppDelegate.swift` on Expo SDK 53 and newer, the Objective-C
+delegate on older templates — so it starts at launch. With
+`isAutoInitEnabled: false` the delegate is left untouched and the SDK does
+**not** initialize on launch: call [`initialize()`](./manual-initialization.md)
+yourself before logging events. This is useful for consent-gated initialization
+(GDPR / ATT). If you also set `autoLogAppEventsEnabled: false`, call
+`activateApp()` after `initialize()` so installs can still be attributed.
 :::
 
 ## SKAdNetwork & App Tracking Transparency (iOS)

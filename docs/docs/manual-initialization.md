@@ -6,27 +6,40 @@ sidebar_position: 4
 
 # Manual Initialization & Runtime Configuration
 
-By default the Facebook SDK initializes automatically at app launch. If you need
-to **gate initialization** behind user consent (GDPR, App Tracking Transparency),
-set `isAutoInitEnabled: false` in the [config plugin](./expo-setup.md) and drive
-the SDK from JavaScript instead.
+By default the config plugin wires the Facebook SDK into your app delegate so
+it initializes at launch. If you need to **gate initialization** behind user
+consent (GDPR, App Tracking Transparency), set `isAutoInitEnabled: false` in the
+[config plugin](./expo-setup.md) — the plugin then leaves the app delegate
+untouched — and drive the SDK from JavaScript instead.
 
 ## Deferred initialization
 
 ```typescript
 import {
+  activateApp,
   initialize,
+  setAutoInitEnabled,
   setAutoLogAppEventsEnabled,
   setAdvertiserIDCollectionEnabled,
 } from "expo-facebook-analytics";
 
-async function onUserGrantedConsent() {
+function onUserGrantedConsent() {
   // Optionally configure collection before initializing.
   setAutoLogAppEventsEnabled(true);
   setAdvertiserIDCollectionEnabled(true);
 
   // Initialize the SDK — events logged before this are not sent.
   initialize();
+
+  // With automatic event logging off, this is what publishes the install and
+  // launch events Meta needs to attribute installs. Call it once per launch.
+  activateApp();
+}
+
+function onUserWithdrewConsent() {
+  // Android persists the auto-init flag that initialize() switched on, so undo
+  // it — otherwise the next launch starts the SDK before JavaScript runs.
+  setAutoInitEnabled(false);
 }
 ```
 
@@ -59,6 +72,7 @@ reads these values during initialization.
 
 | Function                                   | Effect                                          |
 | ------------------------------------------ | ----------------------------------------------- |
+| `setAutoInitEnabled(enabled)`              | Enable/disable auto-init (persisted on Android) |
 | `setAutoLogAppEventsEnabled(enabled)`      | Enable/disable automatic event logging          |
 | `setAdvertiserIDCollectionEnabled(enabled)`| Enable/disable advertiser-ID (IDFA/AAID) collection |
 | `setAppID(appID)`                          | Set the Facebook App ID at runtime              |

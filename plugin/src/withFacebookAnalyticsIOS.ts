@@ -84,42 +84,100 @@ export const withUserTrackingPermission: ConfigPlugin<ResolvedProps> = (
   });
 };
 
-export const withFacebookAppDelegate: ConfigPlugin<ResolvedProps> = (
-  config,
-  _props,
-) => {
-  return withAppDelegate(config, (mod) => {
-    const contents = mod.modResults.contents;
+const OBJC_IMPORT = "#import <FBSDKCoreKit/FBSDKCoreKit.h>";
+const OBJC_LAUNCH_HOOK =
+  "[[FBSDKApplicationDelegate sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];";
+const SWIFT_IMPORT = "import FBSDKCoreKit";
+const SWIFT_LAUNCH_HOOK =
+  "ApplicationDelegate.shared.application(application, didFinishLaunchingWithOptions: launchOptions)";
+const SWIFT_LAUNCH_ANCHOR =
+  /^([ \t]*)return super\.application\(application, didFinishLaunchingWithOptions: launchOptions\)/m;
 
-    // Add import
-    if (!contents.includes("#import <FBSDKCoreKit/FBSDKCoreKit.h>")) {
-      mod.modResults.contents = mod.modResults.contents.replace(
-        '#import "AppDelegate.h"',
-        '#import "AppDelegate.h"\n#import <FBSDKCoreKit/FBSDKCoreKit.h>',
+/**
+ * Wire the Facebook SDK into the app delegate so it initializes at launch.
+ *
+ * Expo SDK 53 and newer generate `AppDelegate.swift` (an `ExpoAppDelegate`
+ * subclass); older templates are Objective-C. Both are handled, and the patch
+ * is idempotent. Exported without the config-plugin wrapper so it can be
+ * unit-tested against template snippets.
+ */
+export function applyFacebookAppDelegate(
+  contents: string,
+  language: string,
+): string {
+  let result = contents;
+
+  if (language === "swift") {
+    if (!result.includes(SWIFT_IMPORT)) {
+      // Ahead of the first import, whatever access modifier the template uses
+      // (`internal import Expo` on SDK 57, plain `import Expo` before).
+      const withImport = result.replace(
+        /^((?:\w+ )?import [^\n]+\n)/m,
+        `${SWIFT_IMPORT}\n$1`,
+      );
+      result =
+        withImport === result ? `${SWIFT_IMPORT}\n${result}` : withImport;
+    }
+
+    if (!result.includes(SWIFT_LAUNCH_HOOK)) {
+      if (!SWIFT_LAUNCH_ANCHOR.test(result)) {
+        throw new Error(
+          "expo-facebook-analytics: could not find `return super.application(application, didFinishLaunchingWithOptions: launchOptions)` in AppDelegate.swift. " +
+            "Restore Expo's template delegate, or set `isAutoInitEnabled: false` and call `initialize()` from JavaScript.",
+        );
+      }
+      result = result.replace(
+        SWIFT_LAUNCH_ANCHOR,
+        `$1${SWIFT_LAUNCH_HOOK}\n$1return super.application(application, didFinishLaunchingWithOptions: launchOptions)`,
       );
     }
 
-    // Add didFinishLaunchingWithOptions hook
-    if (!contents.includes("FBSDKApplicationDelegate")) {
-      mod.modResults.contents = mod.modResults.contents.replace(
-        "self.initialProps = @{};",
-        "self.initialProps = @{};\n  [[FBSDKApplicationDelegate sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];",
-      );
-    }
+    return result;
+  }
 
-    // Add openURL handler
-    if (!contents.includes("openURL:url options:options")) {
-      const openURLMethod = `
+  if (!result.includes(OBJC_IMPORT)) {
+    result = result.replace(
+      '#import "AppDelegate.h"',
+      `#import "AppDelegate.h"\n${OBJC_IMPORT}`,
+    );
+  }
+
+  if (!result.includes("FBSDKApplicationDelegate")) {
+    result = result.replace(
+      "self.initialProps = @{};",
+      `self.initialProps = @{};\n  ${OBJC_LAUNCH_HOOK}`,
+    );
+  }
+
+  if (!result.includes("openURL:url options:options")) {
+    const openURLMethod = `
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
   return [[FBSDKApplicationDelegate sharedInstance] application:application openURL:url options:options];
 }`;
-      mod.modResults.contents = mod.modResults.contents.replace(
-        /@end\s*$/,
-        `${openURLMethod}\n\n@end\n`,
-      );
-    }
+    result = result.replace(/@end\s*$/, `${openURLMethod}\n\n@end\n`);
+  }
 
+  return result;
+}
+
+export const withFacebookAppDelegate: ConfigPlugin<ResolvedProps> = (
+  config,
+  props,
+) => {
+  // With auto-init off the app starts the SDK from JavaScript through
+  // `initialize()`; wiring the delegate anyway would start it at launch and
+  // defeat consent gating. (The iOS SDK has had no auto-init of its own since
+  // v9, so this wiring is the only launch-time path.)
+  if (!props.isAutoInitEnabled) {
+    return config;
+  }
+
+  return withAppDelegate(config, (mod) => {
+    mod.modResults.contents = applyFacebookAppDelegate(
+      mod.modResults.contents,
+      mod.modResults.language,
+    );
     return mod;
   });
 };

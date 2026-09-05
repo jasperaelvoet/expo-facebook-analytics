@@ -1,5 +1,6 @@
 package com.margelo.nitro.com.nitrofbanalytics
 
+import android.app.Application
 import android.os.Bundle
 import com.facebook.FacebookSdk
 import com.facebook.LoggingBehavior
@@ -27,6 +28,10 @@ class HybridFacebookAnalytics : HybridFacebookAnalyticsSpec() {
     override fun initialize() {
         FacebookSdk.setAutoInitEnabled(true)
         FacebookSdk.fullyInitialize()
+    }
+
+    override fun setAutoInitEnabled(enabled: Boolean) {
+        FacebookSdk.setAutoInitEnabled(enabled)
     }
 
     override fun setAutoLogAppEventsEnabled(enabled: Boolean) {
@@ -65,6 +70,15 @@ class HybridFacebookAnalytics : HybridFacebookAnalyticsSpec() {
     // endregion
 
     // region Event Logging
+
+    override fun activateApp() {
+        // Publishes the install (with the Play install referrer) once per device,
+        // then the launch event — the only path that does so when automatic
+        // event logging is off.
+        val application = FacebookSdk.getApplicationContext() as? Application
+            ?: throw IllegalStateException("The Facebook SDK has no Application context; call initialize() first")
+        AppEventsLogger.activateApp(application)
+    }
 
     override fun logEvent(eventName: String, valueToSum: Double, params: Map<String, String>) {
         val bundle = mapToBundle(params)

@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { applyFacebookAppDelegate } from "../plugin/src/withFacebookAnalyticsIOS";
 
 const defaultProps = {
   appID: "123456789",
@@ -152,50 +153,78 @@ describe("withSKAdNetworkIdentifiers", () => {
   });
 });
 
-describe("withFacebookAppDelegate", () => {
-  test("adds FBSDKCoreKit import", () => {
-    const contents = '#import "AppDelegate.h"\n// rest of file';
+describe("applyFacebookAppDelegate (Swift, Expo SDK 53+)", () => {
+  const swiftTemplate = `internal import Expo
+import React
 
-    const result = contents.replace(
-      '#import "AppDelegate.h"',
+@main
+class AppDelegate: ExpoAppDelegate {
+  public override func application(
+    _ application: UIApplication,
+    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+  ) -> Bool {
+    window = UIWindow(frame: UIScreen.main.bounds)
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+}
+`;
+
+  test("imports FBSDKCoreKit and initializes the SDK before super", () => {
+    const result = applyFacebookAppDelegate(swiftTemplate, "swift");
+
+    expect(
+      result.startsWith("import FBSDKCoreKit\ninternal import Expo\n"),
+    ).toBe(true);
+    expect(result).toContain(
+      "    ApplicationDelegate.shared.application(application, didFinishLaunchingWithOptions: launchOptions)\n" +
+        "    return super.application(application, didFinishLaunchingWithOptions: launchOptions)",
+    );
+  });
+
+  test("is idempotent", () => {
+    const once = applyFacebookAppDelegate(swiftTemplate, "swift");
+
+    expect(applyFacebookAppDelegate(once, "swift")).toBe(once);
+  });
+
+  test("fails loudly when Expo's template anchor is missing", () => {
+    expect(() =>
+      applyFacebookAppDelegate("import Expo\nclass AppDelegate {}\n", "swift"),
+    ).toThrow("isAutoInitEnabled: false");
+  });
+});
+
+describe("applyFacebookAppDelegate (Objective-C)", () => {
+  const objcTemplate = `#import "AppDelegate.h"
+
+@implementation AppDelegate
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+  self.initialProps = @{};
+  return YES;
+}
+
+@end
+`;
+
+  test("imports FBSDKCoreKit, initializes the SDK and adds the openURL handler", () => {
+    const result = applyFacebookAppDelegate(objcTemplate, "objc");
+
+    expect(result).toContain(
       '#import "AppDelegate.h"\n#import <FBSDKCoreKit/FBSDKCoreKit.h>',
     );
-
-    expect(result).toContain("#import <FBSDKCoreKit/FBSDKCoreKit.h>");
-  });
-
-  test("does not duplicate import", () => {
-    const contents =
-      '#import "AppDelegate.h"\n#import <FBSDKCoreKit/FBSDKCoreKit.h>\n// rest';
-
-    const alreadyHasImport = contents.includes(
-      "#import <FBSDKCoreKit/FBSDKCoreKit.h>",
-    );
-
-    expect(alreadyHasImport).toBe(true);
-  });
-
-  test("adds didFinishLaunchingWithOptions hook", () => {
-    const contents = "self.initialProps = @{};\n// rest";
-
-    const result = contents.replace(
-      "self.initialProps = @{};",
+    expect(result).toContain(
       "self.initialProps = @{};\n  [[FBSDKApplicationDelegate sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];",
     );
-
-    expect(result).toContain("FBSDKApplicationDelegate");
+    expect(result).toContain("openURL:url options:options");
+    expect(result.trimEnd().endsWith("@end")).toBe(true);
   });
 
-  test("adds openURL handler before @end", () => {
-    const contents = "// some code\n@end\n";
+  test("is idempotent", () => {
+    const once = applyFacebookAppDelegate(objcTemplate, "objc");
 
-    const result = contents.replace(
-      /@end\s*$/,
-      "- (BOOL)application:openURL\n\n@end\n",
-    );
-
-    expect(result).toContain("application:openURL");
-    expect(result).toContain("@end");
+    expect(applyFacebookAppDelegate(once, "objc")).toBe(once);
   });
 });
 
